@@ -37,12 +37,23 @@ function FitBoundsToPlaces({ places }: { places: any[] }) {
   return null
 }
 
+function FlyToPlace({ place }: { place: any }) {
+  const map = useMap()
+  useEffect(() => {
+    if (place?.lat && place?.lng) {
+      map.flyTo([place.lat, place.lng], 15, { duration: 0.8 })
+    }
+  }, [place])
+  return null
+}
+
 export default function SharedTripPage() {
   const { token } = useParams<{ token: string }>()
   const { t, locale } = useTranslation()
   const [data, setData] = useState<any>(null)
   const [error, setError] = useState(false)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  const [selectedPlace, setSelectedPlace] = useState<any>(null)
   const [activeTab, setActiveTab] = useState('plan')
   const [showLangPicker, setShowLangPicker] = useState(false)
 
@@ -170,6 +181,7 @@ export default function SharedTripPage() {
           <MapContainer center={center as [number, number]} zoom={11} zoomControl={false} style={{ width: '100%', height: '100%' }}>
             <TileLayer url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png" referrerPolicy="strict-origin-when-cross-origin" />
             <FitBoundsToPlaces places={mapPlaces} />
+            <FlyToPlace place={selectedPlace} />
             {mapPlaces.map((p: any) => (
               <Marker key={p.id} position={[p.lat, p.lng]} icon={createMarkerIcon(p)}>
                 <Tooltip>{p.name}</Tooltip>
@@ -252,7 +264,7 @@ export default function SharedTripPage() {
                             {place.image_url ? <img src={place.image_url} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} /> : <MapPin size={13} color="white" />}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 500, color: '#111827' }}>{place.name}</div>
+                            <div onClick={() => setSelectedPlace(place)} style={{ fontSize: 12.5, fontWeight: 500, color: '#111827' }}>{place.name}</div>
                             {(place.address || place.description) && <div style={{ fontSize: 10, color: '#9ca3af', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{place.address || place.description}</div>}
                           </div>
                           {place.place_time && <span style={{ fontSize: 10, color: '#6b7280', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}><Clock size={9} />{place.place_time}{place.end_time ? ` – ${place.end_time}` : ''}</span>}
